@@ -17,24 +17,29 @@ public class ImageGenerator extends JPanel {
 	int numPoly = 300;
 	double highestFit;
 	double crossChance = 0.8;
-	double mutationChance = 0.05;
+	double mutationChance = 0.5;
 	Member[] newColony = new Member[population];
 	int imgHeight;
 	int imgWidth;
 	int generation;
+	BufferedImage test;
+	int type;
 
 	public ImageGenerator() {
 		img = null;
 		bestFit = null;
+		test = null;
 		highestFit = Double.MAX_VALUE;
 
 		try {
 			img = ImageIO.read(new File("MonaLisa.png"));
+			test = ImageIO.read(new File("MonaLisa.png"));
 			// Type 6 TYPE_4BYTE_ABGR
 
 		} catch (IOException e) {
 			System.out.println("File not found");
 		}
+		System.out.println("Test imgae fitness " + fitness(test));
 		imgWidth = img.getWidth();
 		imgHeight = img.getHeight();
 		// Initial population
@@ -48,7 +53,10 @@ public class ImageGenerator extends JPanel {
 			}
 		}
 		// Main loop
-		while (highestFit > 5E9) {
+		while (highestFit > 5E7) {
+			if (generation == 10) {
+				break;
+			}
 			System.out.println("Highest fit " + highestFit);
 			System.out.println("Generation: " + generation);
 			repaint();
@@ -63,7 +71,7 @@ public class ImageGenerator extends JPanel {
 			}
 			generation++;
 		}
-
+		repaint();
 		System.out.println("blah");
 
 	}
@@ -82,7 +90,7 @@ public class ImageGenerator extends JPanel {
 			ovals[i].draw(g2d);
 		}
 		g2d.dispose();
-		return new Member(fitness(img), ovals, img);
+		return new Member(fitness(img), ovals, img, type);
 	}
 
 	private BufferedImage redraw(BufferedImage old, Oval[] ovals) {
@@ -112,7 +120,7 @@ public class ImageGenerator extends JPanel {
 			ovals[i] = new Oval(randInt(0, imgWidth), randInt(0, imgHeight),
 					randInt(1, imgWidth), randInt(1, imgHeight),
 					rand.nextFloat(), rand.nextFloat(), rand.nextFloat(),
-					randFlo(0, 1));
+					randFlo(0, 1), randFlo(0, 100));
 		}
 		return ovals;
 	}
@@ -121,9 +129,22 @@ public class ImageGenerator extends JPanel {
 		double fitness = 0;
 		for (int y = 0; y < img.getHeight(); y++) {
 			for (int x = 0; x < img.getWidth(); x++) {
-				double orgImg = img.getRGB(x, y);
-				double newImg = member.getRGB(x, y);
-				fitness += Math.abs(orgImg - newImg);
+				int orgImg = img.getRGB(x, y);
+				int red = (orgImg >> 16) & 0xff;
+				int green = (orgImg >> 8) & 0xff;
+				int blue = (orgImg) & 0xff;
+
+				int newImg = member.getRGB(x, y);
+				int red2 = (newImg >> 16) & 0xff;
+				int green2 = (newImg >> 8) & 0xff;
+				int blue2 = (newImg) & 0xff;
+
+				int redChange = red - red2;
+				int greenChange = green - green2;
+				int blueChange = blue - blue2;
+
+				fitness += redChange * redChange + greenChange * greenChange
+						+ blueChange * blueChange;
 			}
 		}
 		return fitness;
@@ -163,7 +184,7 @@ public class ImageGenerator extends JPanel {
 					ovals[i] = new Oval(randInt(0, imgWidth), randInt(0,
 							imgHeight), randInt(1, imgWidth), randInt(1,
 							imgHeight), rand.nextFloat(), rand.nextFloat(),
-							rand.nextFloat(), randFlo(0, 1));
+							rand.nextFloat(), randFlo(0, 1), randFlo(0, 100));
 				}
 				// ---End Mutation---//
 				else {
@@ -174,7 +195,7 @@ public class ImageGenerator extends JPanel {
 					BufferedImage.TYPE_4BYTE_ABGR);
 			img = redraw(img, ovals);
 
-			return new Member(fitness(img), ovals, img);
+			return new Member(fitness(img), ovals, img, type);
 		} else {
 			return parents[0];
 		}
