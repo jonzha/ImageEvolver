@@ -14,8 +14,9 @@ import javax.swing.JPanel;
 
 public class ImageGenerator2 extends JPanel {
 	int population = 2;
-	int numPoly = 100;
+	int numPoly = 400;
 	int type = 1;
+	int polyPoints = 3;
 	BufferedImage orgImg;
 	Member[] colony = new Member[population];
 	BufferedImage startImage;
@@ -27,10 +28,12 @@ public class ImageGenerator2 extends JPanel {
 	Member child;
 	int frameWidth;
 	int frameHeight;
-	int targetImgY, startImgY, currentImgY;
+	int targetImgX, startImgX, currentImgX;
 	int improvements;
 	boolean draw;
 	double fitness;
+	boolean smartMutate = true;
+	int imgYs;
 
 	// (1-current difference/maximum difference).
 
@@ -41,7 +44,7 @@ public class ImageGenerator2 extends JPanel {
 		improvements = 0;
 
 		try {
-			orgImg = ImageIO.read(new File("humc.jpg"));
+			orgImg = ImageIO.read(new File("monalisa.png"));
 			// Type 6 TYPE_4BYTE_ABGR
 
 		} catch (IOException e) {
@@ -75,7 +78,11 @@ public class ImageGenerator2 extends JPanel {
 			if (fitness > 0.999) {
 				break;
 			}
-			fitness = 1 - parent.fitness / initialFitness(startImage);
+			child = parent.copy();
+			int[] instructions = child.mutate();
+			child.fitness(orgImg);
+			generation++;
+
 			// System.out.println("Paren fit " + parent.fitness);
 			// System.out.println("Child fit " + child.fitness);
 
@@ -84,19 +91,24 @@ public class ImageGenerator2 extends JPanel {
 			// System.out.printf("Fitness: %.3f%%", (fitness * 100));
 			// System.out.println();
 			// System.out.println();
-			if (child.fitness < parent.fitness) {
-
-				parent = child.copy();
-				improvements++;
+			if (smartMutate) {
+				while (child.fitness < parent.fitness) {
+					parent = child.copy();
+					improvements++;
+					instructions = child.mutate2(instructions);
+					child.fitness(orgImg);
+					generation++;
+					fitness = 1 - parent.fitness / initialFitness(startImage);
+					repaint();
+				}
+			} else {
+				if (child.fitness < parent.fitness) {
+					parent = child.copy();
+					improvements++;
+					fitness = 1 - parent.fitness / initialFitness(startImage);
+				}
 			}
-			child = parent.copy();
-			// System.out.println("Parent fit " + parent.fitness);
-			// System.out.println("Child fit " + child.fitness);
-			child.mutate();
-			child.fitness(orgImg);
-			// System.out.println("Child fit " + child.fitness);
 
-			generation++;
 		}
 
 		repaint();
@@ -140,7 +152,7 @@ public class ImageGenerator2 extends JPanel {
 		for (int i = 0; i < numPoly; i++) {
 			Random rand = new Random();
 			// *****NUMBER OF POINTS*****//
-			int points = 3;
+			int points = polyPoints;
 			// generate x coords and y coords
 			int[] xpoints = new int[points];
 			int[] ypoints = new int[points];
@@ -195,18 +207,18 @@ public class ImageGenerator2 extends JPanel {
 
 	private void updateStats(Graphics g) {
 		g.setFont(new Font(null, Font.BOLD, 12));
-		g.drawString("Target Image", 30, targetImgY - 2);
-		g.drawString("Original Image ", 30, startImgY - 2);
-		g.drawString("Current Image", 30, currentImgY - 2);
-		g.drawString("Stats", (int) (frameHeight / 2.5), startImgY + 40);
+		g.drawString("Target Image", targetImgX, imgYs - 2);
+		g.drawString("Original Image ", startImgX, imgYs - 2);
+		g.drawString("Current Image", currentImgX, imgYs - 2);
+		g.drawString("Stats", (int) (frameWidth / 2.5), imgYs + imgHeight + 20);
 		g.setFont(new Font(null, Font.PLAIN, 12));
-		g.drawString("Generation: " + generation, (int) (frameHeight / 2.5),
-				startImgY + 55);
-		g.drawString("Improvements: " + improvements,
-				(int) (frameHeight / 2.5), startImgY + 70);
+		g.drawString("Generation: " + generation, (int) (frameWidth / 2.5),
+				imgYs + imgHeight + 35);
+		g.drawString("Improvements: " + improvements, (int) (frameWidth / 2.5),
+				imgYs + imgHeight + 50);
 		NumberFormat formatter = new DecimalFormat("#0.000");
 		g.drawString("Accuracy: " + formatter.format((fitness * 100)) + "%",
-				(int) (frameHeight / 2.5), startImgY + 85);
+				(int) (frameWidth / 2.5), imgYs + imgHeight + 65);
 
 		// g.drawString(", x, y);
 	}
@@ -224,13 +236,14 @@ public class ImageGenerator2 extends JPanel {
 		super.paint(g);
 		frameHeight = (int) getSize().getHeight();
 		frameWidth = (int) getSize().getWidth();
-		int spacing = (frameHeight - imgHeight * 3) / 4;
-		targetImgY = spacing;
-		startImgY = spacing * 2 + imgHeight;
-		currentImgY = spacing * 3 + imgHeight * 2;
-		g.drawImage(orgImg, 30, targetImgY, null);
-		g.drawImage(startImage, 30, startImgY, null);
-		g.drawImage(parent.img, 30, currentImgY, null);
+		int spacing = (frameWidth - imgWidth * 3) / 4;
+		targetImgX = spacing * 3 + imgWidth * 2;
+		startImgX = spacing;
+		currentImgX = spacing * 2 + imgWidth;
+		imgYs = (int) (frameHeight / 2 - imgHeight / 2 - frameHeight * 0.1);
+		g.drawImage(orgImg, targetImgX, imgYs, null);
+		g.drawImage(startImage, startImgX, imgYs, null);
+		g.drawImage(parent.img, currentImgX, imgYs, null);
 		updateStats(g);
 
 	}

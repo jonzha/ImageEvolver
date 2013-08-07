@@ -236,7 +236,6 @@ public class Member {
 
 	public int[] mutate2(int[] instructions) {
 		int gene = instructions[0];
-		int mutateAmt = randInt(-10, 10);
 		int shapeNum = instructions[1];
 
 		// ===Oval mutation===
@@ -357,41 +356,89 @@ public class Member {
 				}
 				break;
 			case 3: // x coordinates of whole shape
-				for (int i = 0; i < polygons[shapeNum].xpoints.length; i++) {
-					polygons[shapeNum].xpoints[i] += mutateAmt;
+
+				if (instructions[2] < 0) {
+					for (int i = 0; i < polygons[shapeNum].xpoints.length; i++) {
+						polygons[shapeNum].xpoints[i] += randInt(
+								instructions[2], -1);
+					}
+				} else {
+					for (int i = 0; i < polygons[shapeNum].xpoints.length; i++) {
+						polygons[shapeNum].xpoints[i] += randInt(1,
+								instructions[2]);
+					}
 				}
+
 				break;
 			case 4: // y coordinates of whole shape
-				for (int i = 0; i < polygons[shapeNum].ypoints.length; i++) {
-					polygons[shapeNum].ypoints[i] += mutateAmt;
+				if (instructions[2] < 0) {
+					for (int i = 0; i < polygons[shapeNum].ypoints.length; i++) {
+						polygons[shapeNum].ypoints[i] += randInt(
+								instructions[2], -1);
+					}
+				} else {
+					for (int i = 0; i < polygons[shapeNum].ypoints.length; i++) {
+						polygons[shapeNum].ypoints[i] += randInt(1,
+								instructions[2]);
+					}
 				}
 				break;
 			case 5: // color
+				float randr;
+				if (instructions[2] < 0) {
+					randr = randInt(instructions[2], -1) / 100;
+				} else {
+					randr = randInt(1, instructions[2]) / 100;
+
+				}
 				if (polygons[shapeNum].r + randr >= 0
 						&& polygons[shapeNum].r + randr <= 1) {
 					polygons[shapeNum].r += randr;
 				}
+
+				float randg;
+				if (instructions[3] < 0) {
+					randg = randInt(instructions[3], -1) / 100;
+				} else {
+					randg = randInt(1, instructions[3]) / 100;
+				}
 				if (polygons[shapeNum].g + randg >= 0
 						&& polygons[shapeNum].g + randg <= 1) {
 					polygons[shapeNum].g += randg;
+				}
 
+				float randb;
+				if (instructions[4] < 0) {
+					randb = randInt(instructions[4], -1) / 100;
+				} else {
+					randb = randInt(1, instructions[4]) / 100;
 				}
 				if (polygons[shapeNum].b + randb >= 0
 						&& polygons[shapeNum].b + randb <= 1) {
 					polygons[shapeNum].b += randb;
-
 				}
 				polygons[shapeNum].recolor();
 
 				break;
-			case 6: // transparency
-				if (polygons[shapeNum].transparency + randr > 0
-						&& polygons[shapeNum].transparency + randr < 1) {
-					polygons[shapeNum].transparency += randr;
+			case 6:
+				float transparencyValue;
+				if (instructions[2] < 0) {
+					transparencyValue = randInt(instructions[2], -1) / 100;
+				} else {
+					transparencyValue = randInt(1, instructions[2]) / 100;
+
+				}
+				if (polygons[shapeNum].transparency + transparencyValue > 0
+						&& polygons[shapeNum].transparency + transparencyValue < 1) {
+					polygons[shapeNum].transparency += transparencyValue;
 				}
 				break;
-			case 7: // order
-				polygons[shapeNum].order += mutateAmt;
+			case 7:
+				if (instructions[2] < 0) {
+					polygons[shapeNum].order += randInt(instructions[2], -1);
+				} else {
+					polygons[shapeNum].order += randInt(1, instructions[2]);
+				}
 				Arrays.sort(polygons);
 				break;
 
@@ -403,20 +450,30 @@ public class Member {
 		fitness(img);
 		switch (gene) {
 		case 1:
-			return new int[] { gene, xMoveAmt };
+			if (type == 1) {
+				return new int[] { gene, shapeNum, instructions[2] };
+			} else {
+				return new int[] { gene, shapeNum, instructions[2],
+						instructions[3] };
+			}
 		case 2:
-			return new int[] { gene, yMoveAmt };
+			if (type == 1) {
+				return new int[] { gene, shapeNum, instructions[2] };
+			} else {
+				return new int[] { gene, shapeNum, instructions[2],
+						instructions[3] };
+			}
 		case 3:
-			return new int[] { gene, mutateAmt };
+			return new int[] { gene, shapeNum, instructions[2] };
 		case 4:
-			return new int[] { gene, mutateAmt };
+			return new int[] { gene, shapeNum, instructions[2] };
 		case 5:
-			return new int[] { gene, (int) (randr * 100), (int) (randg * 100),
-					(int) (randb * 100) };
+			return new int[] { gene, shapeNum, instructions[2],
+					instructions[3], instructions[4] };
 		case 6:
-			return new int[] { gene, (int) (randr * 100) };
+			return new int[] { gene, shapeNum, instructions[2] };
 		case 7:
-			return new int[] { gene, mutateAmt };
+			return new int[] { gene, shapeNum, instructions[2] };
 
 		}
 		return null;

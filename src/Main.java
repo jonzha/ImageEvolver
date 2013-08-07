@@ -9,7 +9,7 @@ public class Main extends JFrame {
 
 		board = new ImageGenerator2(true);
 		add(board);
-		setSize(4 * board.imgWidth, (int) (4.5 * board.imgHeight));
+		setSize(5 * board.imgWidth, (int) (2.5 * board.imgHeight));
 		setTitle("IMAGE EVOLUTION!!");
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 
