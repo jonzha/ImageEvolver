@@ -36,8 +36,20 @@ public class PolygonNew extends Polygon implements Comparable<PolygonNew> {
 
 	}
 
+	public boolean compareArray(int[] one, int[] two) {
+		for (int i = 0; i < one.length; i++) {
+			if (one[i] != two[i]) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 	public int compareTo(PolygonNew o) {
-		if (this == o) {
+		if (compareArray(o.xpoints, xpoints)
+				&& compareArray(ypoints, o.ypoints) && npoints == o.npoints
+				&& r == o.r && g == o.g && b == o.b
+				&& transparency == o.transparency && order == o.order) {
 			return 0;
 		} else if (this.order > o.order) {
 			return -1;
@@ -46,9 +58,28 @@ public class PolygonNew extends Polygon implements Comparable<PolygonNew> {
 		}
 	}
 
+	// I CAN'T BELIEVE I SPENT THAT MUCH TIME TRYING TO FIX THIS STUPID POLYGON
+	// THING AND THE MISTAKE WAS HERE. I SHOULD HAVE KNOWN. NEVER RETURN A
+	// REFERENCE TO AN ARRAY. ALWAYS MAKE A COPY METHOD OMFG.
+	public int[] copyXPoints() {
+		int[] ret = new int[xpoints.length];
+		for (int i = 0; i < xpoints.length; i++) {
+			ret[i] = xpoints[i];
+		}
+		return ret;
+	}
+
+	public int[] copyYPoints() {
+		int[] ret = new int[ypoints.length];
+		for (int i = 0; i < ypoints.length; i++) {
+			ret[i] = ypoints[i];
+		}
+		return ret;
+	}
+
 	public PolygonNew copy() {
-		return new PolygonNew(xpoints, ypoints, npoints, r, g, b, transparency,
-				order);
+		return new PolygonNew(copyXPoints(), copyYPoints(), npoints, r, g, b,
+				transparency, order);
 	}
 
 }

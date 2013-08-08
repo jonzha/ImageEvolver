@@ -9,8 +9,8 @@ public class Main extends JFrame {
 
 		board = new ImageGenerator2(true);
 		add(board);
-		setSize(5 * board.imgWidth, (int) (2.5 * board.imgHeight));
-		setTitle("IMAGE EVOLUTION!!");
+		setSize(5 * board.imgWidth, (int) (3.5 * board.imgHeight));
+		setTitle("Evolution of the image");
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 
 		// add(new GUIContainer(new Chromo[8]));
