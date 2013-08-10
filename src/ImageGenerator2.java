@@ -16,15 +16,15 @@ import javax.swing.JPanel;
 public class ImageGenerator2 extends JPanel {
 
 	// ***GUI***//
-	int numPoly = 50;
+	int numPoly = 100;
 	int type = 2; // 1 for circle, 2 for polygon
-	int polyPoints = 6;
-	boolean smartMutate = false;
+	int polyPoints = 25;
+	boolean smartMutate = true;
 	String fileName = "monalisa.png";
 	// ***GUI***//
 
 	int population = 2;
-	BufferedImage orgImg;
+	BufferedImage targetImg;
 	Member[] colony = new Member[population];
 	BufferedImage startImage;
 	Member[] newColony = new Member[population];
@@ -43,22 +43,48 @@ public class ImageGenerator2 extends JPanel {
 
 	// (1-current difference/maximum difference).
 
-	public ImageGenerator2(boolean draw) {
-		this.draw = draw;
-		orgImg = null;
+	public ImageGenerator2() {
+
+		targetImg = null;
 		startImage = null;
 		improvements = 0;
 
 		try {
-			orgImg = ImageIO.read(new File(fileName));
+			targetImg = ImageIO.read(new File(fileName));
+			// Type 6
+			// TYPE_4BYTE_ABGR
+
+		} catch (IOException e) {
+			System.out.println("File not found");
+			System.exit(1);
+		}
+		imgWidth = targetImg.getWidth();
+		imgHeight = targetImg.getHeight();
+		// Initial population
+
+		BufferedImage tempImg = new BufferedImage(100, 100,
+				BufferedImage.TYPE_4BYTE_ABGR);
+		parent = initializePop(tempImg);
+		startImage = parent.copy().img;
+		child = parent.copy();
+
+	}
+
+	public ImageGenerator2(BufferedImage targetImg) {
+		targetImg = null;
+		startImage = null;
+		improvements = 0;
+
+		try {
+			targetImg = ImageIO.read(new File(fileName));
 			// Type 6 TYPE_4BYTE_ABGR
 
 		} catch (IOException e) {
 			System.out.println("File not found");
 			System.exit(1);
 		}
-		imgWidth = orgImg.getWidth();
-		imgHeight = orgImg.getHeight();
+		imgWidth = targetImg.getWidth();
+		imgHeight = targetImg.getHeight();
 		// Initial population
 
 		BufferedImage tempImg = new BufferedImage(100, 100,
@@ -82,7 +108,7 @@ public class ImageGenerator2 extends JPanel {
 			child = parent.copy();
 
 			int[] instructions = child.mutate();
-			child.fitness(orgImg);
+			child.fitness(targetImg);
 			repaint();
 
 			generation++;
@@ -101,7 +127,7 @@ public class ImageGenerator2 extends JPanel {
 					improvements++;
 					instructions = child.mutate2(instructions);
 					repaint();
-					child.fitness(orgImg);
+					child.fitness(targetImg);
 					generation++;
 					fitness = 1 - parent.fitness / initialFitness(startImage);
 					repaint();
@@ -188,10 +214,10 @@ public class ImageGenerator2 extends JPanel {
 		double fitness = 0;
 		for (int y = 0; y < imgHeight; y++) {
 			for (int x = 0; x < imgWidth; x++) {
-				int orgImgPix = orgImg.getRGB(x, y);
-				int red = (orgImgPix >> 16) & 0xff;
-				int green = (orgImgPix >> 8) & 0xff;
-				int blue = (orgImgPix) & 0xff;
+				int targetImgPix = targetImg.getRGB(x, y);
+				int red = (targetImgPix >> 16) & 0xff;
+				int green = (targetImgPix >> 8) & 0xff;
+				int blue = (targetImgPix) & 0xff;
 
 				int newImgPix = member.getRGB(x, y);
 				int red2 = (newImgPix >> 16) & 0xff;
@@ -214,15 +240,16 @@ public class ImageGenerator2 extends JPanel {
 		g.drawString("Target Image", targetImgX, imgYs - 2);
 		g.drawString("Original Image ", startImgX, imgYs - 2);
 		g.drawString("Current Image", currentImgX, imgYs - 2);
-		g.drawString("Live Image", (int) (frameWidth / 2.5), imgYs + imgHeight
-				+ 20);
+		// g.drawString("Live Image", (int) (frameWidth / 2.5), imgYs +
+		// imgHeight
+		// + 20);
 		g.drawString("Stats", (int) (frameWidth / 2.5), imgYs - imgHeight + 20);
 
 		g.setFont(new Font(null, Font.PLAIN, 12));
-		g.drawString("Generation: " + generation, (int) (frameWidth / 2.5),
-				imgYs - imgHeight + 35);
-		g.drawString("Improvements: " + improvements, (int) (frameWidth / 2.5),
-				imgYs - imgHeight + 50);
+		g.drawString("Attempted Changes: " + generation,
+				(int) (frameWidth / 2.5), imgYs - imgHeight + 35);
+		g.drawString("Succesful Changes: " + improvements,
+				(int) (frameWidth / 2.5), imgYs - imgHeight + 50);
 		NumberFormat formatter = new DecimalFormat("#0.000");
 		g.drawString("Accuracy: " + formatter.format((fitness * 100)) + "%",
 				(int) (frameWidth / 2.5), imgYs - imgHeight + 65);
@@ -250,7 +277,7 @@ public class ImageGenerator2 extends JPanel {
 		startImgX = spacing;
 		currentImgX = spacing * 2 + imgWidth;
 		imgYs = (int) frameHeight - (frameHeight - imgHeight);
-		g.drawImage(orgImg, targetImgX, imgYs, null);
+		g.drawImage(targetImg, targetImgX, imgYs, null);
 		g.drawImage(startImage, startImgX, imgYs, null);
 		g.drawImage(parent.img, currentImgX, imgYs, null);
 		// g.drawImage(child.img, currentImgX, imgYs + imgHeight + 15, null);
