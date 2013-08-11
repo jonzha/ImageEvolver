@@ -1,3 +1,9 @@
+/**
+ * File: ImageTester.java
+ * Author: Jon Zhang
+ * Date created: August 2013
+ * Date last modified: August 10, 2013
+ */
 import javax.swing.JFrame;
 
 public class ImageTester extends JFrame {

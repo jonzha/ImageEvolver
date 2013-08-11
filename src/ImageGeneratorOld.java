@@ -8,7 +8,7 @@ import java.util.Random;
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 
-public class ImageGenerator extends JPanel {
+public class ImageGeneratorOld extends JPanel {
 	int population = 200;
 	BufferedImage img;
 
@@ -25,7 +25,7 @@ public class ImageGenerator extends JPanel {
 	BufferedImage test;
 	int type;
 
-	public ImageGenerator() {
+	public ImageGeneratorOld() {
 		img = null;
 		bestFit = null;
 		test = null;

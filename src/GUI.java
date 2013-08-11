@@ -1,7 +1,9 @@
 import java.awt.Component;
 import java.awt.Font;
+import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.Image;
+import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -9,8 +11,6 @@ import java.awt.event.ItemListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
 
 import javax.imageio.ImageIO;
 import javax.swing.BoxLayout;
@@ -24,11 +24,16 @@ import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
-import javax.swing.filechooser.FileFilter;
 
 public class GUI extends JFrame implements ActionListener, Runnable {
+	/**
+	 * File: GUI.java Author: Jon Zhang Date created: August 2013 Date last
+	 * modified: August 10, 2013
+	 */
+	private static final long serialVersionUID = 2253447554945502308L;
 	JButton open, start;
 	JFileChooser fileChooser;
 	BufferedImage image;
@@ -37,21 +42,25 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 	JLabel pic;
 	JCheckBox sMButton;
 	boolean smartMutate;
-	int shapeType;
+	int shapeType = 2;
 	JMenuBar menuBar;
 	JMenu file;
-	JMenuItem instructions, about, menu, statistics;
+	JMenuItem about, info;
 	SliderGUI numPoly, numPoints;
 	JPanel container;
-	static boolean started;
 
 	public GUI() {
 		// Setting initial image
+
 		try {
-			image = ImageIO.read(new File("monalisa.png"));
+			image = ImageIO
+					.read(getClass().getResource("/images/monalisa.png"));
+
 		} catch (IOException e) {
-			System.out.println("MONA IS MISSING");
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
+
 		container = new JPanel();
 		container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
 
@@ -68,7 +77,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 	public JPanel addTop() {
 		top = new JPanel();
 		top.setLayout(new BoxLayout(top, BoxLayout.Y_AXIS));
-		JLabel title = new JLabel("Image Generator");
+		JLabel title = new JLabel("Image Generator 1.0");
 		title.setFont(new Font(null, Font.BOLD, 20));
 		title.setAlignmentX(Component.CENTER_ALIGNMENT);
 		JLabel author = new JLabel("By Jon Zhang");
@@ -77,7 +86,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		JLabel selectedImg = new JLabel("Selected Image");
 		selectedImg.setFont(new Font(null, Font.PLAIN, 10));
 		selectedImg.setAlignmentX(Component.CENTER_ALIGNMENT);
-		ii = new ImageIcon(this.getClass().getResource("monalisa.png"));
+		ii = new ImageIcon(this.getClass().getResource("/images/monalisa.png"));
 		pic = new JLabel(ii);
 		pic.setAlignmentX(Component.CENTER_ALIGNMENT);
 
@@ -118,6 +127,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		sliders.add(numPoly);
 		sliders.add(numPoints);
 		otherStuff.add(shapeType());
+
 		otherStuff.add(smartMutateBox());
 		otherStuff.add(start);
 		bottom.add(sliders);
@@ -132,21 +142,33 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		file = new JMenu("File");
 		menuBar.add(file);
 
+		JMenu help;
+		help = new JMenu("Help");
+		menuBar.add(help);
+
 		about = new JMenuItem("About");
 		about.addActionListener(this);
 
-		menu = new JMenuItem("Menu");
-		menu.addActionListener(this);
-
-		instructions = new JMenuItem("Instructions");
-		instructions.addActionListener(this);
-
-		statistics = new JMenuItem("Statistics");
-		statistics.addActionListener(this);
+		info = new JMenuItem("Info");
+		info.addActionListener(this);
 
 		file.add(about);
+		help.add(info);
 		setJMenuBar(menuBar);
 
+	}
+
+	private void about() {
+		JOptionPane.showMessageDialog(null, "Version 1.0 \n Jon Zhang 2013",
+				"About", 1);
+	}
+
+	private void info() {
+		JOptionPane
+				.showMessageDialog(
+						null,
+						" Number of shapes- This determines how many shapes will be used to create the image. The more shapes that are used the more accurate the final image will be and the more time the rendering will take. \n Number of vertices on polygon- This determines the number of vertices each polygon will have if the polygon option is selected. \n Smart Mutate- Having this box checked will apply the Smart Mutate algorithm, which will optimize the rendering process.",
+						"Info", 1);
 	}
 
 	public JPanel shapeType() {
@@ -209,6 +231,17 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 				ii = new ImageIcon(image);
 
 			}
+			if (image.getHeight() > 150) {
+				image = resize(
+						(int) (150.00 / (double) image.getHeight() * image
+								.getWidth()),
+						150, image);
+			}
+			if (image.getWidth() > 300) {
+				image = resize(300,
+						(int) (300.00 / (double) image.getWidth() * image
+								.getHeight()), image);
+			}
 			pic.setIcon(ii);
 
 		} catch (IOException e) {
@@ -217,33 +250,68 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 	}
 
 	public void start() {
-		started = true;
 		Thread generatorThread = new Thread(this);
 		generatorThread.start();
 	}
 
 	public void startMain() {
+		int numShapes = Integer.parseInt(numPoly.textField.getText()
+				.replaceAll(",", ""));
+		int polyPoints = Integer.parseInt(numPoints.textField.getText());
+		String[] options = new String[] { "Change value", "Continue anyway" };
+
+		if (numShapes > 150 && shapeType == 2) {
+			int result = JOptionPane
+					.showOptionDialog(
+							null,
+							"Numbers of polygons over 150 are not recommended and will cause the program to work extremely slowly.",
+							"Warning", JOptionPane.OK_CANCEL_OPTION,
+							JOptionPane.INFORMATION_MESSAGE, null, options,
+							options[0]);
+			if (result == JOptionPane.OK_OPTION) {
+				return;
+			}
+		} else if (numShapes < 100 && shapeType == 1) {
+			int result = JOptionPane
+					.showOptionDialog(
+							null,
+							"Numbers of circles less than 100 are not recommended and will not create an accurate depiction.",
+							"Warning", JOptionPane.OK_CANCEL_OPTION,
+							JOptionPane.INFORMATION_MESSAGE, null, options,
+							options[0]);
+			if (result == JOptionPane.OK_OPTION) {
+				return;
+			}
+		}
 		ImageGeneratorWGUI generator = new ImageGeneratorWGUI(image, shapeType,
-				Integer.parseInt(numPoly.textField.getText()
-						.replaceAll(",", "")), // Gets rid of annoying commas
-				Integer.parseInt(numPoints.textField.getText()), smartMutate);
+				numShapes, polyPoints, smartMutate);
 		add(generator);
+		setSize(4 * image.getWidth(), (int) (2.5 * image.getHeight()) + 30);
 		remove(container);
 		validate();
 		generator.start();
+	}
+
+	public BufferedImage resize(int newWidth, int newHeight,
+			BufferedImage original) {
+		BufferedImage resized = new BufferedImage(newWidth, newHeight,
+				original.getType());
+		Graphics2D g = resized.createGraphics();
+		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+				RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+		g.drawImage(original, 0, 0, newWidth, newHeight, 0, 0,
+				original.getWidth(), original.getHeight(), null);
+		g.dispose();
+		return resized;
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == open) {
 			fileChooser = new JFileChooser();
-			PictureFilter filter = new PictureFilter();
-			filter.add("jpg");
-			filter.add("gif");
-			filter.add("png");
-			filter.setDescription("Images");
+
 			fileChooser.setAcceptAllFileFilterUsed(false);
-			fileChooser.setFileFilter(filter);
+			fileChooser.setFileFilter(new PictureFilter());
 			int result = fileChooser.showOpenDialog(this);
 			if (result == JFileChooser.APPROVE_OPTION) {
 				File img = fileChooser.getSelectedFile();
@@ -253,53 +321,23 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			}
 		} else if (e.getActionCommand() == "Polygon") {
 			shapeType = 2;
+
 			System.out.println("Shape is set to polygon");
 		} else if (e.getActionCommand() == "Circle") {
 			shapeType = 1;
+
 			System.out.println("Shape is set to circle");
 		} else if (e.getSource() == start) {
 			start();
+		} else if (e.getSource() == about) {
+			about();
+		} else if (e.getSource() == info) {
+			info();
 		}
 
 	}
 
-	class PictureFilter extends FileFilter {
-
-		ArrayList<String> list = new ArrayList<String>();
-		private String description;
-
-		public void add(String type) {
-			list.add(type);
-		}
-
-		@Override
-		public boolean accept(File f) {
-			if (f.isDirectory()) {
-				return true;
-			} else if (f.isFile()) {
-				Iterator iterator = list.iterator();
-				while (iterator.hasNext()) {
-					if (f.getName().endsWith((String) iterator.next())) {
-						return true;
-					}
-
-				}
-			}
-			return false;
-
-		}
-
-		@Override
-		public String getDescription() {
-			return description;
-		}
-
-		public void setDescription(String description) {
-			this.description = description;
-		}
-
-	}
-
+	@SuppressWarnings("unused")
 	public static void main(String[] args) {
 		GUI game = new GUI();
 	}

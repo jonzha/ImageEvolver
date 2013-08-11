@@ -1,3 +1,9 @@
+/**
+ * File: Member.java
+ * Author: Jon Zhang
+ * Date created: August 2013
+ * Date last modified: August 9, 2013
+ */
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
@@ -7,10 +13,10 @@ import java.util.Random;
 
 public class Member {
 	double fitness;
-	Oval[] ovals;
-	PolygonNew[] polygons;
+	Oval[] ovals;// The array of circles that create the image
+	PolygonNew[] polygons;// The array of polygons that create the image
 	BufferedImage img;
-	int type;
+	int type; // Is it a circle or polygon? 1 for circle 2 for polygon
 
 	public Member(double fitness, Object[] shape, BufferedImage img, int type) {
 		this.fitness = fitness;
@@ -41,7 +47,7 @@ public class Member {
 		}
 	}
 
-	// Redraws the image
+	// Redraws the image after the array of shapes is updated
 	public void redraw() {
 		int w = img.getWidth();
 		int h = img.getHeight();
@@ -49,7 +55,6 @@ public class Member {
 		img = new BufferedImage(w, h, BufferedImage.TYPE_4BYTE_ABGR);
 
 		Graphics2D g2d = img.createGraphics();
-		// g2d.drawImage(old, 0, 0, null);
 
 		// Actual coding part
 		if (type == 1) {
@@ -65,7 +70,8 @@ public class Member {
 
 	}
 
-	// Recalculates the fitness based on original image
+	// Recalculates the fitness value of this member by comparing the member's
+	// image with the provided original image
 	public void fitness(BufferedImage original) {
 		fitness = 0;
 		for (int y = 0; y < original.getHeight(); y++) {
@@ -91,42 +97,54 @@ public class Member {
 
 	}
 
-	// Mutates the given member
+	// Mutates the given member. An array of ints is returned so that those
+	// values maybe used in mutate2, also known as smartMutate. The array that
+	// is returned contains the gene mutated and the amount it was mutated.
 	public int[] mutate() {
-		int gene = randInt(1, 7);
-		int mutateAmt = randInt(-10, 10);
-		int shapeNum;
-		int polygonPoint = 0;
-		int xMoveAmt = randInt(-img.getWidth(), img.getWidth()) / 2;
-		int yMoveAmt = randInt(-img.getHeight(), img.getHeight()) / 2;
+		int gene = randInt(1, 7); // The gene to mutate
+		int mutateAmt = randInt(-10, 10); // A range of values to add or
+											// subtract from selected gene.
+		int shapeNum; // The index of the shape in the array of shapes. (Which
+						// shape to mutate)
+		int polygonPoint = 0; // If the shape is a polygon, which point of the
+								// polygon to mutate
+		int xMoveAmt = randInt(-img.getWidth(), img.getWidth()) / 2; // Amount
+																		// to
+																		// mutate
+																		// xposition
+		int yMoveAmt = randInt(-img.getHeight(), img.getHeight()) / 2;// Amount
+																		// to
+																		// mutate
+																		// yposition
 		if (type == 1) {
 			shapeNum = randInt(0, ovals.length - 1);
 		} else {
 			shapeNum = randInt(0, polygons.length - 1);
 		}
+		// Amounts to mutate rgb values
 		float randr = randFlo(-0.2f, 0.2f);
 		float randg = randFlo(-0.2f, 0.2f);
 		float randb = randFlo(-0.2f, 0.2f);
 		// ===Oval mutation===
 		if (type == 1) {
 			switch (gene) {
-			case 1:
+			case 1: // xcoordinate
 				if (xMoveAmt + ovals[shapeNum].x < img.getWidth()) {
 					ovals[shapeNum].x += xMoveAmt;
 				}
 				break;
-			case 2:
+			case 2: // ycoordinate
 				if (yMoveAmt + ovals[shapeNum].y < img.getHeight()) {
 					ovals[shapeNum].y += yMoveAmt;
 				}
 				break;
-			case 3:
+			case 3: // width
 				ovals[shapeNum].width += mutateAmt;
 				break;
-			case 4:
+			case 4: // height
 				ovals[shapeNum].height += mutateAmt;
 				break;
-			case 5:
+			case 5: // color
 				if (ovals[shapeNum].r + randr >= 0
 						&& ovals[shapeNum].r + randr <= 1) {
 					ovals[shapeNum].r += randr;
@@ -142,13 +160,13 @@ public class Member {
 				ovals[shapeNum].recolor();
 
 				break;
-			case 6:
+			case 6: // transparency
 				if (ovals[shapeNum].transparency + randr > 0
 						&& ovals[shapeNum].transparency + randr < 1) {
 					ovals[shapeNum].transparency += randr;
 				}
 				break;
-			case 7:
+			case 7: // index in the array (order that the shapes are painted)
 				ovals[shapeNum].order += mutateAmt;
 				Arrays.sort(ovals);
 				break;
@@ -220,21 +238,15 @@ public class Member {
 		}
 
 		redraw();
-		// fitness(img);
+
+		// If circle return this
 		if (type == 1) {
 			switch (gene) {
 			case 1:
-				if (type == 1) {
-					return new int[] { gene, shapeNum, xMoveAmt };
-				} else {
-					return new int[] { gene, shapeNum, polygonPoint, xMoveAmt };
-				}
+				return new int[] { gene, shapeNum, xMoveAmt };
+
 			case 2:
-				if (type == 1) {
-					return new int[] { gene, shapeNum, yMoveAmt };
-				} else {
-					return new int[] { gene, shapeNum, polygonPoint, yMoveAmt };
-				}
+				return new int[] { gene, shapeNum, yMoveAmt };
 			case 3:
 				return new int[] { gene, shapeNum, mutateAmt };
 			case 4:
@@ -249,26 +261,24 @@ public class Member {
 
 			}
 		} else {
+			// if polygon return this
 			switch (gene) {
 			case 1:
-				if (type == 1) {
-					return new int[] { gene, shapeNum, xMoveAmt };
-				} else {
-					return new int[] { gene, shapeNum, polygonPoint, xMoveAmt };
-				}
+				return new int[] { gene, shapeNum, polygonPoint, xMoveAmt };
 			case 2:
-				if (type == 1) {
-					return new int[] { gene, shapeNum, yMoveAmt };
-				} else {
-					return new int[] { gene, shapeNum, polygonPoint, yMoveAmt };
-				}
+				return new int[] { gene, shapeNum, polygonPoint, yMoveAmt };
+
 				/*
 				 * case 3: return new int[] { gene, shapeNum, mutateAmt }; case
 				 * 4: return new int[] { gene, shapeNum, mutateAmt };
 				 */
 			case 3:
+				// Note the *100 because it's an array of ints. When these
+				// values are taken in by mutate2, they are divided by 100 in
+				// order to mantain their decimals.
 				return new int[] { gene, shapeNum, (int) (randr * 100),
 						(int) (randg * 100), (int) (randb * 100) };
+
 			case 4:
 				return new int[] { gene, shapeNum, (int) (randr * 100) };
 			case 5:
@@ -280,6 +290,8 @@ public class Member {
 		return null;
 	}
 
+	// Takes in the array returned by the first mutate method and mutates that
+	// gene again.
 	public int[] mutate2(int[] instructions) {
 		int gene = instructions[0];
 		int shapeNum = instructions[1];
@@ -485,8 +497,6 @@ public class Member {
 				}
 				Arrays.sort(polygons);
 				break;
-
-			// If variable amount of points add a case statement here for that
 			}
 		}
 
@@ -556,6 +566,7 @@ public class Member {
 		return null;
 	}
 
+	// Creates a copy of the image
 	BufferedImage deepCopy(BufferedImage bi) {
 		ColorModel cm = bi.getColorModel();
 		boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
@@ -572,51 +583,4 @@ public class Member {
 		return min + (max - min) * r.nextFloat();
 	}
 
-	public boolean bufferedImagesEqual(BufferedImage img1, BufferedImage img2) {
-		if (img1.getWidth() == img2.getWidth()
-				&& img1.getHeight() == img2.getHeight()) {
-			for (int x = 0; x < img1.getWidth(); x++) {
-				for (int y = 0; y < img1.getHeight(); y++) {
-					if (img1.getRGB(x, y) != img2.getRGB(x, y)) {
-						System.out.println("Pics nots ame");
-						return false;
-					}
-				}
-			}
-		} else {
-			System.out.println("Pics nots ame");
-
-			return false;
-		}
-		return true;
-	}
-
-	public boolean polygonCompare(PolygonNew[] one, PolygonNew[] two) {
-		for (int i = 0; i < one.length; i++) {
-			if (one[i].compareTo(two[i]) != 0) {
-				System.out.println("NOT EQUAL");
-				return false;
-			}
-		}
-		return true;
-	}
-
-	public boolean equal(Member o) {
-		if (type == 1) {
-			if (fitness == o.fitness && type == o.type
-					&& bufferedImagesEqual(img, o.img)) {
-				System.out.println("All same");
-				return true;
-			}
-		} else {
-			if (fitness == o.fitness && type == o.type
-					&& bufferedImagesEqual(img, o.img)
-					&& polygonCompare(polygons, o.polygons)) {
-				System.out.println("All same");
-				return true;
-			}
-		}
-
-		return false;
-	}
 }

@@ -1,3 +1,9 @@
+/**
+ * File: SliderGUI.java
+ * Author: Jon Zhang
+ * Date created: August 2013
+ * Date last modified: August 10, 2013
+ */
 import java.awt.Font;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -16,9 +22,12 @@ public class SliderGUI extends JPanel implements ChangeListener,
 		PropertyChangeListener {
 	JFormattedTextField textField;
 	JSlider slider;
+	int sliderMin, sliderMax;
 
 	public SliderGUI(String weight, int sliderMin, int sliderMax,
 			int majorSpacing, int minorSpacing, int defaultValue) {
+		this.sliderMin = sliderMin;
+		this.sliderMax = sliderMax;
 		SpringLayout layout = new SpringLayout();
 		setLayout(layout);
 		NumberFormatter formatter = new NumberFormatter(
@@ -78,14 +87,24 @@ public class SliderGUI extends JPanel implements ChangeListener,
 		JSlider source = (JSlider) e.getSource();
 		int textValue = (int) source.getValue();
 		textField.setText("" + textValue);
+
 	}
 
 	@Override
 	public void propertyChange(PropertyChangeEvent e) {
+		int value;
 		if ("value".equals(e.getPropertyName())) {
-			Number value = (Number) e.getNewValue();
+			value = (int) (((Number) e.getNewValue()).doubleValue());
+			// If user enters something out of range
+			if (value > sliderMax) {
+				value = sliderMax;
+				textField.setText(value + "");
+			} else if (value < sliderMin) {
+				value = sliderMin;
+				textField.setText(value + "");
+			}
 			try {
-				slider.setValue((int) value.doubleValue());
+				slider.setValue(value);
 			} catch (NullPointerException n) {
 				System.out.println("Input an integer");
 			}

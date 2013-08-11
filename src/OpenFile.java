@@ -1,3 +1,9 @@
+/**
+ * File: OpenFile.java
+ * Author: Jon Zhang
+ * Date created: August 2013
+ * Date last modified: August 9, 2013
+ */
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;

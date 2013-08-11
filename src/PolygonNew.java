@@ -1,3 +1,9 @@
+/**
+ * File: PolygonNew.java
+ * Author: Jon Zhang
+ * Date created: August 2013
+ * Date last modified: August 8, 2013
+ */
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Graphics2D;

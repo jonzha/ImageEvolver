@@ -1,3 +1,9 @@
+/**
+ * File: ImageGenerator2.java
+ * Author: Jon Zhang
+ * Date created: August 2013
+ * Date last modified: August 10, 2013
+ */
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -16,9 +22,9 @@ import javax.swing.JPanel;
 public class ImageGenerator2 extends JPanel {
 
 	// ***GUI***//
-	int numPoly = 100;
+	int numPoly = 60;
 	int type = 2; // 1 for circle, 2 for polygon
-	int polyPoints = 25;
+	int polyPoints = 5;
 	boolean smartMutate = true;
 	String fileName = "monalisa.png";
 	// ***GUI***//
@@ -50,8 +56,8 @@ public class ImageGenerator2 extends JPanel {
 		improvements = 0;
 
 		try {
-			targetImg = ImageIO.read(new File(fileName));
-			// Type 6
+			targetImg = ImageIO.read(getClass().getResource(
+					"/images/monalisa.png")); // Type 6
 			// TYPE_4BYTE_ABGR
 
 		} catch (IOException e) {
@@ -240,9 +246,8 @@ public class ImageGenerator2 extends JPanel {
 		g.drawString("Target Image", targetImgX, imgYs - 2);
 		g.drawString("Original Image ", startImgX, imgYs - 2);
 		g.drawString("Current Image", currentImgX, imgYs - 2);
-		// g.drawString("Live Image", (int) (frameWidth / 2.5), imgYs +
-		// imgHeight
-		// + 20);
+		g.drawString("Live Image", (int) (frameWidth / 2.5), imgYs + imgHeight
+				+ 20);
 		g.drawString("Stats", (int) (frameWidth / 2.5), imgYs - imgHeight + 20);
 
 		g.setFont(new Font(null, Font.PLAIN, 12));
@@ -280,7 +285,7 @@ public class ImageGenerator2 extends JPanel {
 		g.drawImage(targetImg, targetImgX, imgYs, null);
 		g.drawImage(startImage, startImgX, imgYs, null);
 		g.drawImage(parent.img, currentImgX, imgYs, null);
-		// g.drawImage(child.img, currentImgX, imgYs + imgHeight + 15, null);
+		g.drawImage(child.img, currentImgX, imgYs + imgHeight + 15, null);
 
 		updateStats(g);
 
